@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/quiz_widget.dart';
+import 'package:quiz_app/result.dart';
 
-import 'models/quiz_questions.dart';
+import 'data/questions.dart';
 
 class QuestionsScreen extends StatefulWidget {
   const QuestionsScreen({super.key});
@@ -10,45 +12,40 @@ class QuestionsScreen extends StatefulWidget {
 }
 
 class _QuestionsScreenState extends State<QuestionsScreen> {
-  final quiz = const QuizQuestion(
-    'What are the main building blocks of Flutter UIs?',
-    [
-      'Widgets',
-      'Components',
-      'Blocks',
-      'Functions',
-    ],
-  );
+  int currentQuestionIndex = 0;
+  List<String> userSelectedOptions = [];
 
-  String? selectionOption;
+  void onOptionPressed(String selectedOption) {
+    userSelectedOptions.add(selectedOption);
+    if (currentQuestionIndex != questions.length) {
+      setState(() {
+        currentQuestionIndex++;
+      });
+    }
+    print(userSelectedOptions);
+  }
 
-  List<String>? shuffledOptions;
-
-  @override
-  void initState() {
-    shuffledOptions = List.from(quiz.answers)..shuffle();
-    super.initState();
+  void restart() {
+    setState(() {
+      currentQuestionIndex = 0;
+    });
   }
 
   @override
   Widget build(context) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(quiz.question),
-          for (int i = 0; i < 4; i++)
-            OutlinedButton(
-              onPressed: () {
-                selectionOption = shuffledOptions![i];
+      child: currentQuestionIndex == questions.length
+          ? ResultWidget(
+              selectedOptions: userSelectedOptions,
+              restartQuiz: () {
+                restart();
               },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.pink,
-              ),
-              child: Text(shuffledOptions![i]),
+            )
+          : QuizWidget(
+              key: ValueKey(questions[currentQuestionIndex].question),
+              onOptionPressed: onOptionPressed,
+              quiz: questions[currentQuestionIndex],
             ),
-        ],
-      ),
     );
   }
 }
